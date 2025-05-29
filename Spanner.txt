@@ -1,0 +1,14 @@
+gcloud spanner instances create spannerdemo --edition=ENTERPRISE --config=regional-us-central1 \
+  --description="Demo Instance" --processing-units=100
+
+gcloud auth application-default login
+----https://cloud.google.com/sdk/gcloud/reference/spanner/samples/init
+gcloud spanner samples init finance --instance-id spannerdemo
+gcloud spanner samples init finance-graph --instance-id=spannerdemo
+
+projects/{project}/instances/{instance}/databases/{database}
+
+projects/qwiklabs-gcp-03-b7bbab8e8681/instances/spannerdemo/databases/finance-db
+
+projects/qwiklabs-gcp-03-b7bbab8e8681/instances/spannerdemo/databases/finance-graph-db
+

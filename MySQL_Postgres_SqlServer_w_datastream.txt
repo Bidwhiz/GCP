@@ -1,0 +1,53 @@
+gcloud services enable sqladmin.googleapis.com
+POSTGRES_INSTANCE=cloudsql-postgres
+DATASTREAM_IPS=34.72.28.29,34.67.234.134,34.67.6.157,34.72.239.218,34.71.242.81
+gcloud sql instances create ${POSTGRES_INSTANCE} \
+    --database-version=POSTGRES_14 \
+    --cpu=2 --memory=10GB \
+    --authorized-networks=${DATASTREAM_IPS} \
+    --region=us-central1 \
+    --insights-config-query-insights-enabled \
+    --root-password password \
+    --database-flags=cloudsql.logical_decoding=on
+
+
+MYSQL_INSTANCE=cloudsql-mysql
+DATASTREAM_IPS=34.72.28.29,34.67.234.134,34.67.6.157,34.72.239.218,34.71.242.81
+gcloud sql instances create ${MYSQL_INSTANCE} \
+    --cpu=2 --memory=10GB \
+    --authorized-networks=${DATASTREAM_IPS} \
+    --enable-bin-log \
+    --region=us-central1 \
+    --insights-config-query-insights-enabled \
+    --database-version=MYSQL_8_0 \
+    --root-password password
+
+SQL_INSTANCE=cloudsql-sqlserver
+DATASTREAM_IPS=34.72.28.29,34.67.234.134,34.67.6.157,34.72.239.218,34.71.242.81
+gcloud sql instances create ${SQL_INSTANCE} \
+    --cpu=2 --memory=10GB \
+    --authorized-networks=${DATASTREAM_IPS} \
+    --region=us-central1 \
+    --insights-config-query-insights-enabled \
+    --database-version=SQLSERVER_2019_ENTERPRISE \
+    --root-password password
+
+
+export PROJECT_ID=$(gcloud config get-value project)
+export PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format="value(projectNumber)")
+
+-- federated bq connection to mysql
+bq mk --connection --display_name='cloudsql-mysql' --connection_type='CLOUD_SQL' \
+--properties='{"instanceId":"qwiklabs-gcp-00-bc7f16fa407d:us-central1:cloudsql-mysql","database":"classicmodels","type":"MYSQL"}' \
+--connection_credential='{"username":"root", "password":"password"}' --project_id=$PROJECT_ID \
+--location=us-central1 cloudsql-mysql
+
+-- federated bq connection to postgres
+bq mk --connection --display_name='cloudsql-postgres' --connection_type='CLOUD_SQL' \
+--properties='{"instanceId":"qwiklabs-gcp-00-bc7f16fa407d:us-central1:cloudsql-postgres","database":"classicmodels","type":"POSTGRES"}' \
+--connection_credential='{"username":"postgres", "password":"password"}' --project_id=$PROJECT_ID \
+--location=us-central1 cloudsql-postgres
+
+
+-- federated bq connection to alloydb
+'//alloydb.googleapis.com/projects/qwiklabs-gcp-00-bc7f16fa407d/locations/us-east4/clusters/alloydb/instances/alloydb-primary'

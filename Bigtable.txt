@@ -1,0 +1,17 @@
+-- Steps are based on the qwiklab
+--	Bigtable: Qwik Start - Command Line
+--	https://partner.cloudskillsboost.google/focuses/30340
+
+1)
+gcloud bigtable instances create my-instance-id --display-name="My Instance" --cluster-config=id=my-cluster-id,zone=us-east1-c
+
+echo project = `gcloud config get-value project` > ~/.cbtrc
+echo instance = my-instance-id >> ~/.cbtrc
+
+cbt createtable my-table
+cbt ls
+cbt createfamily my-table cf1
+cbt ls my-table
+cbt set my-table r1 cf1:c1=test-value
+cbt read my-table
+

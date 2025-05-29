@@ -1,0 +1,15 @@
+-- VPC network setup
+
+export PROJECT_ID=$(gcloud config get-value project)
+export PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format="value(projectNumber)")
+
+gcloud compute networks create demo --project=$PROJECT_ID --subnet-mode=auto --mtu=1460 --bgp-routing-mode=regional --bgp-best-path-selection-mode=legacy
+
+gcloud compute firewall-rules create demo-allow-custom --project=$PROJECT_ID --network=projects/$PROJECT_ID/global/networks/demo --description=Allows\ connection\ from\ any\ source\ to\ any\ instance\ on\ the\ network\ using\ custom\ protocols. --direction=INGRESS --priority=65534 --source-ranges=10.128.0.0/9 --action=ALLOW --rules=all
+
+gcloud compute firewall-rules create demo-allow-icmp --project=$PROJECT_ID --network=projects/$PROJECT_ID/global/networks/demo --description=Allows\ ICMP\ connections\ from\ any\ source\ to\ any\ instance\ on\ the\ network. --direction=INGRESS --priority=65534 --source-ranges=0.0.0.0/0 --action=ALLOW --rules=icmp 
+
+gcloud compute firewall-rules create demo-allow-rdp --project=$PROJECT_ID --network=projects/$PROJECT_ID/global/networks/demo --description=Allows\ RDP\ connections\ from\ any\ source\ to\ any\ instance\ on\ the\ network\ using\ port\ 3389. --direction=INGRESS --priority=65534 --source-ranges=0.0.0.0/0 --action=ALLOW --rules=tcp:3389 
+
+gcloud compute firewall-rules create demo-allow-ssh --project=$PROJECT_ID --network=projects/$PROJECT_ID/global/networks/demo --description=Allows\ TCP\ connections\ from\ any\ source\ to\ any\ instance\ on\ the\ network\ using\ port\ 22. --direction=INGRESS --priority=65534 --source-ranges=0.0.0.0/0 --action=ALLOW --rules=tcp:22
+

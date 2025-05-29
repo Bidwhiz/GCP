@@ -1,0 +1,29 @@
+-- Datastream cloudsql postgres to bq
+CREATE PUBLICATION classicmodels FOR ALL TABLES;
+
+alter user postgres with replication;
+
+SELECT PG_CREATE_LOGICAL_REPLICATION_SLOT
+('classicmodels', 'pgoutput');
+
+CREATE USER datastream WITH REPLICATION IN ROLE
+cloudsqlsuperuser LOGIN PASSWORD 'password';
+
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO datastream;
+GRANT USAGE ON SCHEMA public TO datastream;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+GRANT SELECT ON TABLES TO datastream;
+
+-- Datastream alloydb to bq
+gcloud compute instances create-with-container \
+--zone=us-east4-a ds-tcp-proxy \
+--container-image gcr.io/dms-images/tcp-proxy \
+--tags=ds-tcp-proxy \
+--container-env=SOURCE_CONFIG=10.22.176.2:5432 \
+--can-ip-forward \
+--network=default \
+--machine-type=e2-micro
+
+gcloud compute instances describe ds-tcp-proxy \
+--format=`yaml(networkInterfaces[].networkIP)` \
+--zone=us-east4-a
